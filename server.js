@@ -6,23 +6,21 @@ const cors = require("cors");
 const app = express();
 app.use(cors());
 
-// ✅ THIS FIXES YOUR PROBLEM
+// ROOT TEST
 app.get("/", (req, res) => {
-  res.send("🚀 BolNepal Backend is LIVE");
+  res.send("BolNepal Backend OK");
 });
 
 const server = http.createServer(app);
 
 const io = socketIo(server, {
-  cors: {
-    origin: "*",
-  },
+  cors: { origin: "*" }
 });
 
 let waitingUser = null;
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log("User:", socket.id);
 
   if (waitingUser) {
     socket.partner = waitingUser;
@@ -37,9 +35,7 @@ io.on("connection", (socket) => {
   }
 
   socket.on("chat", (msg) => {
-    if (socket.partner) {
-      socket.partner.emit("chat", msg);
-    }
+    socket.partner?.emit("chat", msg);
   });
 
   socket.on("next", () => {
@@ -49,10 +45,6 @@ io.on("connection", (socket) => {
     }
 
     socket.partner = null;
-
-    if (waitingUser === socket) {
-      waitingUser = null;
-    }
 
     if (waitingUser) {
       socket.partner = waitingUser;
@@ -72,17 +64,11 @@ io.on("connection", (socket) => {
       socket.partner.emit("partner-disconnected");
       socket.partner.partner = null;
     }
-
-    if (waitingUser === socket) {
-      waitingUser = null;
-    }
-
-    console.log("User disconnected:", socket.id);
   });
 });
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+  console.log("Running on " + PORT);
 });
